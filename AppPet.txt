@@ -1,0 +1,105 @@
+import React from "react";
+import axios from "axios";
+
+class TabelaPets extends React.Component{
+  render(){
+    //criar arquivos que serão usados na lista e mostrado na tela atualizando.
+    const lista = this.props.state.lista;
+    const listaDisplay = [];
+    //carregar lista.
+    for (let i = 0; i < lista.length; i++){
+      listaDisplay.push(
+      <p> Nome do Pet : {lista[i].nome} </p>
+      );
+    }
+    //exibir na página
+    return (
+      <div>
+       <h2>Lista de Pets</h2>  
+        {listaDisplay}
+        <h3> Fim da lista </h3>
+      </div>
+    );
+  }
+}
+//criação e edição do label que serão utilizadas
+function LabelInput (props){
+  return (
+    <div style={{backgroundColor : props.corFundo}}> 
+      <label> {props.label} </label>
+      <input type='TEXT' value={props.value} 
+          onChange={(e) => {
+            if (props.atualizarTexto) {
+              props.atualizarTexto(e.target.value)}
+            }}/>
+    </div>
+  )
+}
+//classe principal
+class App extends React.Component {
+  //usar o state para as alterações das informações da pagina.
+  state = {
+    petAtual:{
+      id: "",
+      nome: "",
+      especie: "",
+      raca: ""
+    },
+
+    lista : [
+
+    ]
+  }
+
+  componentDidMount() {
+    axios.get(
+      'http://localhost:8080/LSExercicioAula5/pets',
+      {
+        responseType: 'json',
+      }
+    ).then(
+      (response) => {
+        console.log(response);
+        const novoState = {...this.state};
+        novoState.lista = response.data;
+        this.setState(novoState);
+      }
+    );
+  }
+  atualizarTexto(campo, txt){
+    //sempre criar novoState e setState para usar diferentes estancias e atualização da pagina.
+    const novoState = {...this.state};
+    novoState.petAtual[campo] = txt;
+    this.setState(novoState);
+  }
+  salvar(){
+    const novoState = {...this.state};
+    novoState.lista.push({...this.state.petAtual});
+    this.setState(novoState);
+    alert('Operação efetuada com sucesso!');
+  }
+  render(){
+    return (
+      //inputs da pagina. 
+      <div>
+        <h1 font> Casdatro Pets </h1>
+        <LabelInput label="ID:" corFundo = "white" 
+                    value={this.state.petAtual.id}
+                    atualizarTexto={(txt) => this.atualizarTexto('id',txt)}/>
+        <LabelInput label="Nome:" corFundo = "white"
+                    value={this.state.petAtual.nome}
+                    atualizarTexto={(txt) => this.atualizarTexto('nome',txt)}/>
+        <LabelInput label="Espécie:" corFundo = "white"
+                    value={this.state.petAtual.especie}
+                    atualizarTexto={(txt) => this.atualizarTexto('especie',txt)}/>
+        <LabelInput label="Raça:" corFundo = "white"
+                    value={this.state.petAtual.raca}
+                    atualizarTexto={(txt) => this.atualizarTexto('raca',txt)}/>
+        <button onClick={() => {this.salvar()}}> Salvar </button>
+        <TabelaPets state={this.state}/>
+      </div>
+    );
+  }
+}
+
+export default App;
